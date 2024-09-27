@@ -1,0 +1,21 @@
+{
+  "name": "lemonade/component_postcode",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Honza Mudrak",
+      "email": "honza@core1.agency",
+      "homepage": "https://core1.agency"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Lemonade\\Postcode\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=8.1"    
+  }
+}
+
+
