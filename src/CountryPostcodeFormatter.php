@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/**
+ * Class CountryPostcodeFormatter
+ *
+ * Lemonade\Postcode
+ * @author Honza Mudrak <honzamudrak@gmail.com>
+ */
 namespace Lemonade\Postcode;
 
 /**

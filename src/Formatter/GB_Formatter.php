@@ -1,0 +1,107 @@
+<?php declare(strict_types=1);
+
+namespace Lemonade\Postcode\Formatter;
+use Lemonade\Postcode\CountryPostcodeFormatter;
+
+/**
+ * UK, Severni Irsko
+ */
+class GB_Formatter implements CountryPostcodeFormatter
+{
+    /**
+     * The list of valid area codes.
+     */
+    protected const AREA_CODES = [
+        'AB', 'AL', 'B', 'BA', 'BB', 'BD', 'BH', 'BL', 'BN', 'BR', 'BS', 'BT', 'CA', 'CB', 'CF', 'CH', 'CM', 'CO', 'CR',
+        'CT', 'CV', 'CW', 'DA', 'DD', 'DE', 'DG', 'DH', 'DL', 'DN', 'DT', 'DY', 'E', 'EC', 'EH', 'EN', 'EX', 'FK', 'FY',
+        'G', 'GL', 'GU', 'HA', 'HD', 'HG', 'HP', 'HR', 'HS', 'HU', 'HX', 'IG', 'IP', 'IV', 'KA', 'KT', 'KW', 'KY', 'L',
+        'LA', 'LD', 'LE', 'LL', 'LN', 'LS', 'LU', 'M', 'ME', 'MK', 'ML', 'N', 'NE', 'NG', 'NN', 'NP', 'NR', 'NW', 'OL',
+        'OX', 'PA', 'PE', 'PH', 'PL', 'PO', 'PR', 'RG', 'RH', 'RM', 'S', 'SA', 'SE', 'SG', 'SK', 'SL', 'SM', 'SN', 'SO',
+        'SP', 'SR', 'SS', 'ST', 'SW', 'SY', 'TA', 'TD', 'TF', 'TN', 'TQ', 'TR', 'TS', 'TW', 'UB', 'W', 'WA', 'WC', 'WD',
+        'WF', 'WN', 'WR', 'WS', 'WV', 'YO', 'ZE',
+
+        // non-geographic
+        'BF', 'BX', 'XX'
+    ];
+
+    /**
+     * The regular expression patterns, or null if not built yet.
+     * @psalm-var non-empty-string[]|null
+     * @var string[]|null
+     */
+    private ?array $patterns = null;
+
+    public function format(string $postcode) : ?string
+    {
+        // special case
+        if ($postcode === 'GIR0AA') {
+            return 'GIR 0AA';
+        }
+
+        // regular patterns
+        foreach ($this->getPatterns() as $pattern) {
+            if (preg_match($pattern, $postcode, $matches) === 1) {
+                [, $outwardCode, $areaCode, $inwardCode] = $matches;
+
+                if (! in_array($areaCode, GB_Formatter::AREA_CODES, true)) {
+                    return null;
+                }
+
+                return $outwardCode . ' ' . $inwardCode;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function getPatterns() : array
+    {
+        if ($this->patterns !== null) {
+            return $this->patterns;
+        }
+
+        $n = '[0-9]';
+
+        // outward code alpha chars
+        $alphaOut1 = '[ABCDEFGHIJKLMNOPRSTUWYZ]';
+        $alphaOut2 = '[ABCDEFGHKLMNOPQRSTUVWXY]';
+        $alphaOut3 = '[ABCDEFGHJKPSTUW]';
+        $alphaOut4 = '[ABEHMNPRVWXY]';
+
+        // inward code alpha chars
+        $alphaIn = '[ABCDEFGHJLNPQRSTUWXYZ]';
+
+        $outPatterns = [];
+
+        // AN
+        $outPatterns[] = '(' . $alphaOut1 . ')' . $n;
+
+        // ANA
+        $outPatterns[] = '(' . $alphaOut1 . ')' . $n . $alphaOut3;
+
+        // ANN
+        $outPatterns[] = '(' . $alphaOut1 . ')' . $n . $n;
+
+        // AAN
+        $outPatterns[] = '(' . $alphaOut1 . $alphaOut2 . ')' . $n;
+
+        // AANA
+        $outPatterns[] = '(' . $alphaOut1 . $alphaOut2 . ')' . $n . $alphaOut4;
+
+        // AANN
+        $outPatterns[] = '(' . $alphaOut1 . $alphaOut2 . ')' . $n . $n;
+
+        $inPattern = $n . $alphaIn . $alphaIn;
+
+        $patterns = [];
+
+        foreach ($outPatterns as $outPattern) {
+            $patterns[] = '/^(' . $outPattern . ')(' . $inPattern . ')$/';
+        }
+
+        return $this->patterns = $patterns;
+    }
+}
