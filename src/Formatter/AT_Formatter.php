@@ -1,19 +1,17 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Austria
+ * Rakousko
  */
-final class AT_Formatter implements CountryPostcodeFormatter
+class AT_Formatter implements CountryPostcodeFormatter
 {
-    public function format(string $postcode): string
+    public function format(string $postcode) : ?string
     {
-        if (!preg_match('/^[1-9][0-9]{3}$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match('/^[1-9][0-9]{3}$/', $postcode) !== 1) {
+            return null;
         }
 
         return $postcode;

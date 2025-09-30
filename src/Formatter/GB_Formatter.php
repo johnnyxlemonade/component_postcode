@@ -1,19 +1,17 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * United Kingdom, Northern Ireland
+ * UK, Severni Irsko
  */
-final class GB_Formatter implements CountryPostcodeFormatter
+class GB_Formatter implements CountryPostcodeFormatter
 {
     /**
      * The list of valid area codes.
      */
-    private const AREA_CODES = [
+    protected const AREA_CODES = [
         'AB', 'AL', 'B', 'BA', 'BB', 'BD', 'BH', 'BL', 'BN', 'BR', 'BS', 'BT', 'CA', 'CB', 'CF', 'CH', 'CM', 'CO', 'CR',
         'CT', 'CV', 'CW', 'DA', 'DD', 'DE', 'DG', 'DH', 'DL', 'DN', 'DT', 'DY', 'E', 'EC', 'EH', 'EN', 'EX', 'FK', 'FY',
         'G', 'GL', 'GU', 'HA', 'HD', 'HG', 'HP', 'HR', 'HS', 'HU', 'HX', 'IG', 'IP', 'IV', 'KA', 'KT', 'KW', 'KY', 'L',
@@ -33,7 +31,7 @@ final class GB_Formatter implements CountryPostcodeFormatter
      */
     private ?array $patterns = null;
 
-    public function format(string $postcode): string
+    public function format(string $postcode) : ?string
     {
         // special case
         if ($postcode === 'GIR0AA') {
@@ -45,21 +43,21 @@ final class GB_Formatter implements CountryPostcodeFormatter
             if (preg_match($pattern, $postcode, $matches) === 1) {
                 [, $outwardCode, $areaCode, $inwardCode] = $matches;
 
-                if (!in_array($areaCode, self::AREA_CODES, true)) {
-                    throw new InvalidPostcodeException($postcode);
+                if (! in_array($areaCode, GB_Formatter::AREA_CODES, true)) {
+                    return null;
                 }
 
                 return $outwardCode . ' ' . $inwardCode;
             }
         }
 
-        throw new InvalidPostcodeException($postcode);
+        return null;
     }
 
     /**
      * @return string[]
      */
-    private function getPatterns(): array
+    protected function getPatterns() : array
     {
         if ($this->patterns !== null) {
             return $this->patterns;

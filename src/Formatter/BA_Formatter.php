@@ -1,19 +1,17 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Bosnia and Herzegovina
+ * Bosna a Herzegovina
  */
-final class BA_Formatter implements CountryPostcodeFormatter
+class BA_Formatter implements CountryPostcodeFormatter
 {
-    public function format(string $postcode): string
+    public function format(string $postcode) : ?string
     {
-        if (!preg_match('/^[0-9]{5}$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match('/^[0-9]{5}$/', $postcode) !== 1) {
+            return null;
         }
 
         return $postcode;

@@ -1,23 +1,26 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Hungary
+ * Madarsko
  */
-final class HU_Formatter implements CountryPostcodeFormatter
+class HU_Formatter implements CountryPostcodeFormatter
 {
-    public function format(string $postcode): string
+
+    /**
+     * @param string $postcode
+     * @return string|null
+     */
+    public function format(string $postcode) : ?string
     {
-        if (!preg_match('/^[0-9]{4}$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match('/^[0-9]{4}$/', $postcode) !== 1) {
+            return null;
         }
 
         if ($postcode[0] === '0') {
-            throw new InvalidPostcodeException($postcode);
+            return null;
         }
 
         return $postcode;

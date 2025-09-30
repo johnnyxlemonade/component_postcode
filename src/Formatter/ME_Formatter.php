@@ -1,19 +1,22 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Montenegro
+ * Cerna hora
  */
-final class ME_Formatter implements CountryPostcodeFormatter
+class ME_Formatter implements CountryPostcodeFormatter
 {
-    public function format(string $postcode): string
+
+    /**
+     * @param string $postcode
+     * @return string|null
+     */
+    public function format(string $postcode) : ?string
     {
-        if (!preg_match('/^[0-9]{5}$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match('/^[0-9]{5}$/', $postcode) !== 1) {
+            return null;
         }
 
         return $postcode;

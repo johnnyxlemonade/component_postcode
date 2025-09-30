@@ -1,19 +1,17 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Cyprus
+ * Kypr
  */
-final class CY_Formatter implements CountryPostcodeFormatter
+class CY_Formatter implements CountryPostcodeFormatter
 {
-    public function format(string $postcode): string
+    public function format(string $postcode) : ?string
     {
-        if (!preg_match('/^[0-9]+$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match('/^[0-9]+$/', $postcode) !== 1) {
+            return null;
         }
 
         $length = strlen($postcode);
@@ -22,12 +20,12 @@ final class CY_Formatter implements CountryPostcodeFormatter
             return $postcode;
         }
 
-        if ($length !== 5) {
-            throw new InvalidPostcodeException($postcode);
+        if (strlen($postcode) !== 5) {
+            return null;
         }
 
-        if (!str_starts_with($postcode, '99')) {
-            throw new InvalidPostcodeException($postcode);
+        if (substr($postcode, 0, 2) !== '99') {
+            return null;
         }
 
         return $postcode;

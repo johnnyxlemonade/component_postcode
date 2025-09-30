@@ -1,23 +1,26 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
  * Andorra
  */
-final class AD_Formatter implements CountryPostcodeFormatter
+class AD_Formatter implements CountryPostcodeFormatter
 {
-    public function format(string $postcode): string
+
+    /**
+     * @param string $postcode
+     * @return string|null
+     */
+    public function format(string $postcode) : ?string
     {
-        if (str_starts_with($postcode, 'AD')) {
+        if (substr($postcode, 0, 2) === 'AD') {
             $postcode = substr($postcode, 2);
         }
 
-        if (!preg_match('/^[0-9]{3}$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match('/^[0-9]{3}$/', $postcode) !== 1) {
+            return null;
         }
 
         return 'AD' . $postcode;

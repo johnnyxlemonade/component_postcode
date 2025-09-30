@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
-
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Ireland
+ * Irsko
  */
-final class IE_Formatter implements CountryPostcodeFormatter
+class IE_Formatter implements CountryPostcodeFormatter
 {
     /**
      * The regular expression pattern used to validate the postcode and extract the two parts.
@@ -24,10 +22,10 @@ final class IE_Formatter implements CountryPostcodeFormatter
     . '([ACDEFHKNPRTVWXY0-9]{4})'
     . '$/';
 
-    public function format(string $postcode): string
+    public function format(string $postcode) : ?string
     {
-        if (!preg_match(self::PATTERN, $postcode, $matches)) {
-            throw new InvalidPostcodeException($postcode);
+        if (preg_match(IE_Formatter::PATTERN, $postcode, $matches) !== 1) {
+            return null;
         }
 
         return $matches[1] . ' ' . $matches[2];

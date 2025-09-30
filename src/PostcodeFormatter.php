@@ -1,71 +1,96 @@
 <?php declare(strict_types=1);
 
-namespace Lemonade\Postcode;
+/**
+ * Class PostcodeFormatter
+ *
+ * Lemonade\Postcode
+ * @author Honza Mudrak <honzamudrak@gmail.com>
+ */
 
-use Lemonade\Postcode\Exception\UnknownCountryException;
-use Lemonade\Postcode\Exception\InvalidPostcodeException;
+namespace Lemonade\Postcode;
+use Lemonade\Postcode\UnknownCountryException;
+use Lemonade\Postcode\InvalidPostcodeException;
 
 /**
- * Formatting and validation of postal codes
+ * Formatovani a validace postovniho smerovaciho cisla
  */
 final class PostcodeFormatter
 {
-    /** @var array<string, CountryPostcodeFormatter|null> */
+
+    /**
+     * Formatovace postovnich smerovacich cisel podle zemi, indexovane podle kodu zeme
+     * @var array<string, CountryPostcodeFormatter|null>
+     */
     private array $formatters = [];
 
     /**
+     * @param string $country
+     * @param string $postcode
+     * @return string
      * @throws InvalidPostcodeException
      * @throws UnknownCountryException
      */
-    public function format(string $country, string $postcode): string
+    public function format(string $country, string $postcode) : string
     {
-        $normalized = $this->normalize($postcode);
-        $this->validateNormalized($normalized);
+        $postcode = str_replace([' ', '-'], '', $postcode);
+        $postcode = strtoupper($postcode);
 
-        $formatter = $this->getRequiredFormatter($country);
+        $formatter = $this->getFormatter($country);
 
-        return $formatter->format($normalized);
+        if ($formatter === null) {
+            throw new UnknownCountryException('Neznama zeme: ' . $country);
+        }
+
+        if (preg_match('/^[A-Z0-9]+$/', $postcode) !== 1) {
+            throw new InvalidPostcodeException('Nezname PSC: ' . $postcode);
+        }
+
+        $formatted = $formatter->format($postcode);
+
+        if ($formatted === null) {
+            throw new InvalidPostcodeException('Nezname PSC: ' . $postcode);
+        }
+
+        return $formatted;
     }
 
-    public function isSupportedCountry(string $country): bool
+    /**
+     * @param string $country
+     * @return bool
+     */
+    public function isSupportedCountry(string $country) : bool
     {
         return $this->getFormatter($country) !== null;
     }
 
-    private function getRequiredFormatter(string $country): CountryPostcodeFormatter
+    /**
+     * @param string $country
+     * @return CountryPostcodeFormatter|null
+     */
+    protected function getFormatter(string $country) : ?CountryPostcodeFormatter
     {
-        $formatter = $this->getFormatter($country);
-        if ($formatter === null) {
-            throw new UnknownCountryException($country);
+        if (array_key_exists($country, $this->formatters)) {
+            return $this->formatters[$country];
         }
-        return $formatter;
+
+        return $this->formatters[$country] = $this->doGetFormatter($country);
     }
 
-    private function getFormatter(string $country): ?CountryPostcodeFormatter
+    /**
+     * @param string $country
+     * @return CountryPostcodeFormatter|null
+     */
+    protected function doGetFormatter(string $country): ?CountryPostcodeFormatter
     {
-        return $this->formatters[$country] ??= $this->resolveFormatter($country);
-    }
+        $country = strtoupper($country);
 
-    private function resolveFormatter(string $country): ?CountryPostcodeFormatter
-    {
-        $upper = strtoupper($country);
-        if (!preg_match('/^[A-Z]{2}$/', $upper)) {
+        if (preg_match('/^[A-Z]{2}$/', $country) !== 1) {
             return null;
         }
 
-        $class = __NAMESPACE__ . "\\Formatter\\{$upper}_Formatter";
+        /** @var class-string<CountryPostcodeFormatter> $class */
+        $class = __NAMESPACE__ . '\\Formatter\\' . $country . '_Formatter';
+
         return class_exists($class) ? new $class() : null;
-    }
-
-    private function normalize(string $postcode): string
-    {
-        return strtoupper(str_replace([' ', '-'], '', $postcode));
-    }
-
-    private function validateNormalized(string $postcode): void
-    {
-        if (!preg_match('/^[A-Z0-9]+$/', $postcode)) {
-            throw new InvalidPostcodeException($postcode);
-        }
     }
 }
