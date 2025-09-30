@@ -1,41 +1,27 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
+
 use Lemonade\Postcode\CountryPostcodeFormatter;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Litva
+ * Lithuania
  */
-class LT_Formatter implements CountryPostcodeFormatter
+final class LT_Formatter implements CountryPostcodeFormatter
 {
-    /**
-     * @param string $postcode
-     * @return string|null
-     */
-    public function format(string $postcode) : ?string
+    public function format(string $postcode): string
     {
-        $length = strlen($postcode);
-        $prefix = false;
-
-        if ($length === 7) {
-
-            if (!str_starts_with($postcode, 'LT')) {
-                return null;
+        if (str_starts_with($postcode, 'LT') && strlen($postcode) === 7) {
+            $numeric = substr($postcode, 2);
+            if (!preg_match('/^[0-9]{5}$/', $numeric)) {
+                throw new InvalidPostcodeException($postcode);
             }
-
-            $postcode = substr($postcode, 2);
-            $prefix = true;
-
-        } elseif (strlen($postcode) !== 5) {
-            return null;
+            return 'LT-' . $numeric;
         }
 
-        if (preg_match('/^[0-9]+$/', $postcode) !== 1) {
-            return null;
-        }
-
-        if ($prefix) {
-            return 'LT-' . $postcode;
+        if (!preg_match('/^[0-9]{5}$/', $postcode)) {
+            throw new InvalidPostcodeException($postcode);
         }
 
         return $postcode;

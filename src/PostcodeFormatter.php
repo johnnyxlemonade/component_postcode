@@ -1,96 +1,62 @@
 <?php declare(strict_types=1);
 
-/**
- * Class PostcodeFormatter
- *
- * Lemonade\Postcode
- * @author Honza Mudrak <honzamudrak@gmail.com>
- */
-
 namespace Lemonade\Postcode;
-use Lemonade\Postcode\UnknownCountryException;
-use Lemonade\Postcode\InvalidPostcodeException;
+
+use Lemonade\Postcode\Exception\UnknownCountryException;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
+use Lemonade\Postcode\Exception\PostcodeErrorCode;
 
 /**
- * Formatovani a validace postovniho smerovaciho cisla
+ * Formátování a validace PSČ
  */
 final class PostcodeFormatter
 {
-
-    /**
-     * Formatovace postovnich smerovacich cisel podle zemi, indexovane podle kodu zeme
-     * @var array<string, CountryPostcodeFormatter|null>
-     */
+    /** @var array<string, CountryPostcodeFormatter|null> */
     private array $formatters = [];
 
     /**
-     * @param string $country
-     * @param string $postcode
-     * @return string
      * @throws InvalidPostcodeException
      * @throws UnknownCountryException
      */
-    public function format(string $country, string $postcode) : string
+    public function format(string $country, string $postcode): string
     {
-        $postcode = str_replace([' ', '-'], '', $postcode);
-        $postcode = strtoupper($postcode);
-
-        $formatter = $this->getFormatter($country);
+        $normalized = strtoupper(str_replace([' ', '-'], '', $postcode));
+        $formatter  = $this->getFormatter($country);
 
         if ($formatter === null) {
-            throw new UnknownCountryException('Neznama zeme: ' . $country);
+            throw new UnknownCountryException($country);
         }
 
-        if (preg_match('/^[A-Z0-9]+$/', $postcode) !== 1) {
-            throw new InvalidPostcodeException('Nezname PSC: ' . $postcode);
+        if (!preg_match('/^[A-Z0-9]+$/', $normalized)) {
+            throw new InvalidPostcodeException($postcode);
         }
 
-        $formatted = $formatter->format($postcode);
-
+        $formatted = $formatter->format($normalized);
         if ($formatted === null) {
-            throw new InvalidPostcodeException('Nezname PSC: ' . $postcode);
+            throw new InvalidPostcodeException($postcode, PostcodeErrorCode::UnsupportedValue);
         }
 
         return $formatted;
     }
 
-    /**
-     * @param string $country
-     * @return bool
-     */
-    public function isSupportedCountry(string $country) : bool
+    public function isSupportedCountry(string $country): bool
     {
         return $this->getFormatter($country) !== null;
     }
 
-    /**
-     * @param string $country
-     * @return CountryPostcodeFormatter|null
-     */
-    protected function getFormatter(string $country) : ?CountryPostcodeFormatter
+    private function getFormatter(string $country): ?CountryPostcodeFormatter
     {
-        if (array_key_exists($country, $this->formatters)) {
-            return $this->formatters[$country];
-        }
-
-        return $this->formatters[$country] = $this->doGetFormatter($country);
+        return $this->formatters[$country] ??= $this->resolveFormatter($country);
     }
 
-    /**
-     * @param string $country
-     * @return CountryPostcodeFormatter|null
-     */
-    protected function doGetFormatter(string $country): ?CountryPostcodeFormatter
+    private function resolveFormatter(string $country): ?CountryPostcodeFormatter
     {
-        $country = strtoupper($country);
-
-        if (preg_match('/^[A-Z]{2}$/', $country) !== 1) {
+        $upper = strtoupper($country);
+        if (!preg_match('/^[A-Z]{2}$/', $upper)) {
             return null;
         }
 
-        /** @var class-string<CountryPostcodeFormatter> $class */
-        $class = __NAMESPACE__ . '\\Formatter\\' . $country . '_Formatter';
-
+        $class = __NAMESPACE__ . "\\Formatter\\{$upper}_Formatter";
         return class_exists($class) ? new $class() : null;
     }
 }
