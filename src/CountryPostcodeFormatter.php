@@ -1,23 +1,21 @@
 <?php declare(strict_types=1);
 
-/**
- * Class CountryPostcodeFormatter
- *
- * Lemonade\Postcode
- * @author Honza Mudrak <honzamudrak@gmail.com>
- */
 namespace Lemonade\Postcode;
 
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
+
 /**
- * Validace a formatovani PSC
+ * Formatter a validátor PSČ pro konkrétní stát.
+ *
+ * @api
  */
 interface CountryPostcodeFormatter
 {
     /**
-     * Overuje a formatuje zadane postovni smerovaci cislo.
-     * Postovni smerovaci cislo musi byt neprazdny retezec velkych alfanumerickych znaku bez oddelovac
-     * @param string $postcode
-     * @return string|null
+     * Ověří a naformátuje zadané PSČ.
+     * Vstup je vždy alfanumerický uppercase bez oddělovačů.
+     *
+     * @throws InvalidPostcodeException Pokud PSČ není validní.
      */
-    public function format(string $postcode): ?string;
+    public function format(string $postcode): string;
 }

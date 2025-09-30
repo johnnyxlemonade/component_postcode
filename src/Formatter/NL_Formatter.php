@@ -1,25 +1,23 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
+
 use Lemonade\Postcode\CountryPostcodeFormatter;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Nizozemi (holansko)
+ * Netherlands
  */
-class NL_Formatter implements CountryPostcodeFormatter
+final class NL_Formatter implements CountryPostcodeFormatter
 {
-    /**
-     * @param string $postcode
-     * @return string|null
-     */
-    public function format(string $postcode) : ?string
+    public function format(string $postcode): string
     {
-        if (preg_match('/^([0-9]{4})([A-Z]{2})$/', $postcode, $matches) !== 1) {
-            return null;
+        if (!preg_match('/^([0-9]{4})([A-Z]{2})$/', $postcode, $matches)) {
+            throw new InvalidPostcodeException($postcode);
         }
 
         if (in_array($matches[2], ['SS', 'SD', 'SA'], true)) {
-            return null;
+            throw new InvalidPostcodeException($postcode);
         }
 
         return $matches[1] . ' ' . $matches[2];

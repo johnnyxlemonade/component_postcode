@@ -1,25 +1,23 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
+
 use Lemonade\Postcode\CountryPostcodeFormatter;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Island
+ * Iceland
  */
-class IS_Formatter implements CountryPostcodeFormatter
+final class IS_Formatter implements CountryPostcodeFormatter
 {
-    /**
-     * @param string $postcode
-     * @return string|null
-     */
-    public function format(string $postcode) : ?string
+    public function format(string $postcode): string
     {
-        if (preg_match('/^[0-9]{3}$/', $postcode) !== 1) {
-            return null;
+        if (!preg_match('/^[0-9]{3}$/', $postcode)) {
+            throw new InvalidPostcodeException($postcode);
         }
 
         if ($postcode[0] === '0') {
-            return null;
+            throw new InvalidPostcodeException($postcode);
         }
 
         return $postcode;

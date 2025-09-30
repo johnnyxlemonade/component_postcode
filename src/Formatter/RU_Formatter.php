@@ -1,21 +1,19 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
+
 use Lemonade\Postcode\CountryPostcodeFormatter;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Rusko
+ * Russia
  */
-class RU_Formatter implements CountryPostcodeFormatter
+final class RU_Formatter implements CountryPostcodeFormatter
 {
-    /**
-     * @param string $postcode
-     * @return string|null
-     */
-    public function format(string $postcode) : ?string
+    public function format(string $postcode): string
     {
-        if (preg_match('/^[0-9]{6}$/', $postcode) !== 1) {
-            return null;
+        if (!preg_match('/^[0-9]{6}$/', $postcode)) {
+            throw new InvalidPostcodeException($postcode);
         }
 
         return $postcode;

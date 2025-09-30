@@ -1,17 +1,19 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
+
 use Lemonade\Postcode\CountryPostcodeFormatter;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * UK, Severni Irsko
+ * United Kingdom, Northern Ireland
  */
-class GB_Formatter implements CountryPostcodeFormatter
+final class GB_Formatter implements CountryPostcodeFormatter
 {
     /**
      * The list of valid area codes.
      */
-    protected const AREA_CODES = [
+    private const AREA_CODES = [
         'AB', 'AL', 'B', 'BA', 'BB', 'BD', 'BH', 'BL', 'BN', 'BR', 'BS', 'BT', 'CA', 'CB', 'CF', 'CH', 'CM', 'CO', 'CR',
         'CT', 'CV', 'CW', 'DA', 'DD', 'DE', 'DG', 'DH', 'DL', 'DN', 'DT', 'DY', 'E', 'EC', 'EH', 'EN', 'EX', 'FK', 'FY',
         'G', 'GL', 'GU', 'HA', 'HD', 'HG', 'HP', 'HR', 'HS', 'HU', 'HX', 'IG', 'IP', 'IV', 'KA', 'KT', 'KW', 'KY', 'L',
@@ -31,7 +33,7 @@ class GB_Formatter implements CountryPostcodeFormatter
      */
     private ?array $patterns = null;
 
-    public function format(string $postcode) : ?string
+    public function format(string $postcode): string
     {
         // special case
         if ($postcode === 'GIR0AA') {
@@ -43,21 +45,21 @@ class GB_Formatter implements CountryPostcodeFormatter
             if (preg_match($pattern, $postcode, $matches) === 1) {
                 [, $outwardCode, $areaCode, $inwardCode] = $matches;
 
-                if (! in_array($areaCode, GB_Formatter::AREA_CODES, true)) {
-                    return null;
+                if (!in_array($areaCode, self::AREA_CODES, true)) {
+                    throw new InvalidPostcodeException($postcode);
                 }
 
                 return $outwardCode . ' ' . $inwardCode;
             }
         }
 
-        return null;
+        throw new InvalidPostcodeException($postcode);
     }
 
     /**
      * @return string[]
      */
-    protected function getPatterns() : array
+    private function getPatterns(): array
     {
         if ($this->patterns !== null) {
             return $this->patterns;

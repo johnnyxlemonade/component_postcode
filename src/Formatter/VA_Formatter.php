@@ -1,23 +1,21 @@
 <?php declare(strict_types=1);
 
 namespace Lemonade\Postcode\Formatter;
+
 use Lemonade\Postcode\CountryPostcodeFormatter;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Vatikan
+ * Vatican
  */
-class VA_Formatter implements CountryPostcodeFormatter
+final class VA_Formatter implements CountryPostcodeFormatter
 {
-    /**
-     * @param string $postcode
-     * @return string|null
-     */
-    public function format(string $postcode) : ?string
+    public function format(string $postcode): string
     {
         if ($postcode === '00120') {
             return $postcode;
         }
 
-        return null;
+        throw new InvalidPostcodeException($postcode);
     }
 }
