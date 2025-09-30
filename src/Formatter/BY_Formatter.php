@@ -12,7 +12,7 @@ final class BY_Formatter implements CountryPostcodeFormatter
 {
     public function format(string $postcode): string
     {
-        if (!preg_match('/^[0-9]{6}$/', $postcode)) {
+        if (preg_match('/^[0-9]{6}$/', $postcode) !== 1) {
             throw new InvalidPostcodeException($postcode);
         }
 

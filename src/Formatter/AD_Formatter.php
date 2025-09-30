@@ -16,7 +16,7 @@ final class AD_Formatter implements CountryPostcodeFormatter
             $postcode = substr($postcode, 2);
         }
 
-        if (!preg_match('/^[0-9]{3}$/', $postcode)) {
+        if (preg_match('/^[0-9]{3}$/', $postcode) !== 1) {
             throw new InvalidPostcodeException($postcode);
         }
 
