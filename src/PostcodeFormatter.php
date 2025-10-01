@@ -5,13 +5,34 @@ namespace Lemonade\Postcode;
 use Lemonade\Postcode\Exception\UnknownCountryException;
 use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
+use function preg_match;
+use function str_replace;
+use function strtoupper;
+
 /**
- * Formatting and validation of postal codes
+ * PostcodeFormatter
+ *
+ * Core component of the Lemonade Postcode package.
+ * Provides unified API for normalization, validation and formatting
+ * of postal codes across multiple countries.
+ *
+ * Uses a {@see FormatterRegistry} to resolve {@see CountryPostcodeFormatter}
+ * implementations, which encapsulate country-specific validation rules.
+ *
+ * This class is part of the Lemonade Framework infrastructure and is intended
+ * as the main entry point for working with postal code formatting and validation.
+ *
+ * @package     Lemonade Framework
+ * @link        https://lemonadeframework.cz/
+ * @author      Honza Mudrak <honzamudrak@gmail.com>
+ * @license     MIT
+ * @since       1.0.0
  */
 final class PostcodeFormatter
 {
-    /** @var array<string, CountryPostcodeFormatter|null> */
-    private array $formatters = [];
+    public function __construct(
+        protected readonly FormatterRegistry $registry
+    ) {}
 
     /**
      * @throws InvalidPostcodeException
@@ -22,40 +43,14 @@ final class PostcodeFormatter
         $normalized = $this->normalize($postcode);
         $this->validateNormalized($normalized);
 
-        $formatter = $this->getRequiredFormatter($country);
+        $formatter = $this->registry->get($country);
 
         return $formatter->format($normalized);
     }
 
     public function isSupportedCountry(string $country): bool
     {
-        return $this->getFormatter($country) !== null;
-    }
-
-    private function getRequiredFormatter(string $country): CountryPostcodeFormatter
-    {
-        $formatter = $this->getFormatter($country);
-        if ($formatter === null) {
-            throw new UnknownCountryException($country);
-        }
-        return $formatter;
-    }
-
-    private function getFormatter(string $country): ?CountryPostcodeFormatter
-    {
-        return $this->formatters[$country] ??= $this->resolveFormatter($country);
-    }
-
-    private function resolveFormatter(string $country): ?CountryPostcodeFormatter
-    {
-        $upper = strtoupper($country);
-        if (preg_match('/^[A-Z]{2}$/', $upper) !== 1) {
-            return null;
-        }
-
-        $class = __NAMESPACE__ . '\\Formatter\\' . $upper . '_Formatter';
-
-        return class_exists($class) ? new $class() : null;
+        return $this->registry->has($country);
     }
 
     private function normalize(string $postcode): string

@@ -4,6 +4,9 @@ namespace Lemonade\Postcode\Formatter;
 
 use Lemonade\Postcode\CountryPostcodeFormatter;
 use Lemonade\Postcode\Exception\InvalidPostcodeException;
+use Lemonade\Postcode\Formatter\Trait\PostcodeValidationTrait;
+
+use function preg_match;
 
 /**
  * Ireland
@@ -26,7 +29,7 @@ final class IE_Formatter implements CountryPostcodeFormatter
 
     public function format(string $postcode): string
     {
-        if (!preg_match(self::PATTERN, $postcode, $matches)) {
+        if (preg_match(self::PATTERN, $postcode, $matches) !== 1) {
             throw new InvalidPostcodeException($postcode);
         }
 

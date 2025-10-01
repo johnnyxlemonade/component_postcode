@@ -4,6 +4,10 @@ namespace Lemonade\Postcode\Formatter;
 
 use Lemonade\Postcode\CountryPostcodeFormatter;
 use Lemonade\Postcode\Exception\InvalidPostcodeException;
+use Lemonade\Postcode\Formatter\Trait\PostcodeValidationTrait;
+
+use function preg_match;
+use function in_array;
 
 /**
  * United Kingdom, Northern Ireland

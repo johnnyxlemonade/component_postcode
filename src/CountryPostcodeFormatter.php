@@ -5,17 +5,31 @@ namespace Lemonade\Postcode;
 use Lemonade\Postcode\Exception\InvalidPostcodeException;
 
 /**
- * Formatter a validátor PSČ pro konkrétní stát.
+ * CountryPostcodeFormatter
  *
- * @api
+ * Contract for country-specific postal code validation and formatting.
+ * Each implementation encapsulates the validation rules and output
+ * format required for a single ISO 3166-1 alpha-2 country code.
+ *
+ * Used internally by {@see PostcodeFormatter} via {@see FormatterRegistry}.
+ *
+ * @package     Lemonade Framework
+ * @link        https://lemonadeframework.cz/
+ * @author      Honza Mudrak <honzamudrak@gmail.com>
+ * @license     MIT
+ * @since       1.0.0
  */
 interface CountryPostcodeFormatter
 {
     /**
-     * Ověří a naformátuje zadané PSČ.
-     * Vstup je vždy alfanumerický uppercase bez oddělovačů.
+     * Validate and format the given postcode.
      *
-     * @throws InvalidPostcodeException Pokud PSČ není validní.
+     * The input is already normalized (uppercase, no spaces or dashes).
+     *
+     * @param string $postcode Normalized postcode to validate
+     * @return string Formatted postcode
+     *
+     * @throws InvalidPostcodeException
      */
     public function format(string $postcode): string;
 }
