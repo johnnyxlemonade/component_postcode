@@ -6,12 +6,12 @@ use RuntimeException;
 use Throwable;
 
 /**
- * InvalidPostcodeException
+ * UnsupportedCountryException
  *
- * Thrown when a given postcode does not match the expected format
- * or contains unsupported values for a specific country.
+ * Thrown when a valid ISO 3166-1 alpha-2 country code is recognized
+ * but no formatter has been registered for the given country code.
  *
- * Carries the original invalid postcode value and the corresponding
+ * Carries the original country code value and the corresponding
  * {@see PostcodeErrorCode}.
  *
  * @package     Lemonade Framework
@@ -20,11 +20,11 @@ use Throwable;
  * @license     MIT
  * @since       1.0.0
  */
-final class InvalidPostcodeException extends RuntimeException implements PostcodeException
+final class UnsupportedCountryException extends RuntimeException implements PostcodeException
 {
     public function __construct(
-        private readonly string $postcode,
-        PostcodeErrorCode $code = PostcodeErrorCode::InvalidFormat,
+        private readonly string $country,
+        PostcodeErrorCode $code = PostcodeErrorCode::UnsupportedCountry,
         ?Throwable $previous = null
     ) {
         parent::__construct($code->messageKey(), $code->value, $previous);
@@ -32,6 +32,6 @@ final class InvalidPostcodeException extends RuntimeException implements Postcod
 
     public function getValue(): string
     {
-        return $this->postcode;
+        return $this->country;
     }
 }

@@ -3,6 +3,7 @@
 namespace Lemonade\Postcode;
 
 use Lemonade\Postcode\Exception\UnknownCountryException;
+use Lemonade\Postcode\Exception\UnsupportedCountryException;
 
 use function array_keys;
 use function strtoupper;
@@ -11,15 +12,18 @@ use function strtoupper;
  * FormatterRegistry
  *
  * Central registry of available {@see CountryPostcodeFormatter} implementations.
- * Provides a lookup mechanism for country-specific formatters and ensures
- * consistent normalization of country codes.
  *
- * The registry is designed as immutable. It can be extended by creating
- * a new instance via {@see FormatterRegistry::withAdded()}.
+ * Maintains a mapping between ISO 3166-1 alpha-2 country codes and their
+ * corresponding postcode formatters.
  *
- * This class is part of the Lemonade Postcode component and acts as
- * an infrastructure utility used internally by {@see PostcodeFormatter},
- * but can also be extended or replaced by user code.
+ * Custom formatters (including anonymous classes) can be registered at runtime
+ * via {@see FormatterRegistry::register()}.
+ *
+ * Used internally by {@see PostcodeFormatter}, but can also be extended or
+ * accessed directly by userland code to add support for additional countries.
+ *
+ * Exceptions:
+ * - {@see UnsupportedCountryException} if no formatter is registered for the given country
  *
  * @package     Lemonade Framework
  * @link        https://lemonadeframework.cz/
@@ -35,54 +39,38 @@ final class FormatterRegistry
     private readonly array $formatters;
 
     /**
-     * @param array<string, CountryPostcodeFormatter> $formatters
+     * @param array<string, CountryPostcodeFormatter>|null $formatters
      */
-    public function __construct(array $formatters = [])
+    public function __construct(array $formatters = null)
     {
-        $normalized = [];
-        foreach ($formatters as $code => $formatter) {
-            $normalized[$this->normalizeCode($code)] = $formatter;
-        }
-        $this->formatters = $normalized;
+        $this->formatters = $formatters ?? FormatterMapper::all();
+    }
+
+    public function register(CountryCode $countryCode, CountryPostcodeFormatter $formatter): self
+    {
+        $newFormatters = [...$this->formatters, $countryCode->value => $formatter];
+        return new self($newFormatters);
+    }
+
+    public function has(CountryCode $countryCode): bool
+    {
+        return isset($this->formatters[$countryCode->value]);
     }
 
     /**
-     * Returns a new registry instance with the given formatter added.
+     * @throws UnsupportedCountryException
      */
-    public function withAdded(string $country, CountryPostcodeFormatter $formatter): self
+    public function getFormatter(CountryCode $countryCode): CountryPostcodeFormatter
     {
-        $new = $this->formatters;
-        $new[$this->normalizeCode($country)] = $formatter;
-
-        return new self($new);
-    }
-
-    public function get(string $country): CountryPostcodeFormatter
-    {
-        $normalizedCode = $this->normalizeCode($country);
-
-        if (!isset($this->formatters[$normalizedCode])) {
-            throw new UnknownCountryException($country);
-        }
-
-        return $this->formatters[$normalizedCode];
-    }
-
-    public function has(string $country): bool
-    {
-        return isset($this->formatters[$this->normalizeCode($country)]);
+        return $this->formatters[$countryCode->value]
+            ?? throw new UnsupportedCountryException($countryCode->value);
     }
 
     /**
-     * @return string[]
+     * @return array<string, CountryPostcodeFormatter>
      */
-    public function listCountries(): array
+    public function all(): array
     {
-        return array_keys($this->formatters);
-    }
-
-    private function normalizeCode(string $country): string
-    {
-        return strtoupper($country);
+        return $this->formatters;
     }
 }

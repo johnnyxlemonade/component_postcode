@@ -30,28 +30,18 @@ final class GB_Formatter implements CountryPostcodeFormatter
         'BF', 'BX', 'XX'
     ];
 
-    /**
-     * The regular expression patterns, or null if not built yet.
-     * @psalm-var non-empty-string[]|null
-     * @var string[]|null
-     */
-    private ?array $patterns = null;
 
     public function format(string $postcode): string
     {
-        // special case
         if ($postcode === 'GIR0AA') {
             return 'GIR 0AA';
         }
 
-        // regular patterns
         foreach ($this->getPatterns() as $pattern) {
             if (preg_match($pattern, $postcode, $matches) === 1) {
                 [, $outwardCode, $areaCode, $inwardCode] = $matches;
 
-                if (!in_array($areaCode, self::AREA_CODES, true)) {
-                    throw new InvalidPostcodeException($postcode);
-                }
+                $this->assertValidAreaCode($areaCode, $postcode);
 
                 return $outwardCode . ' ' . $inwardCode;
             }
@@ -61,13 +51,25 @@ final class GB_Formatter implements CountryPostcodeFormatter
     }
 
     /**
+     * @return list<string>
+     */
+    public static function getAreaCodes(): array
+    {
+        return self::AREA_CODES;
+    }
+
+    public function assertValidAreaCode(string $areaCode, string $postcode): void
+    {
+        if (!in_array($areaCode, self::AREA_CODES, true)) {
+            throw new InvalidPostcodeException($postcode);
+        }
+    }
+
+    /**
      * @return string[]
      */
-    private function getPatterns(): array
+    public function getPatterns(): array
     {
-        if ($this->patterns !== null) {
-            return $this->patterns;
-        }
 
         $n = '[0-9]';
 
@@ -108,6 +110,8 @@ final class GB_Formatter implements CountryPostcodeFormatter
             $patterns[] = '/^(' . $outPattern . ')(' . $inPattern . ')$/';
         }
 
-        return $this->patterns = $patterns;
+        return $patterns;
     }
+
+
 }

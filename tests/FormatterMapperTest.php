@@ -2,51 +2,30 @@
 
 namespace Lemonade\Postcode\Tests;
 
-use Lemonade\Postcode\FormatterRegistry;
 use Lemonade\Postcode\FormatterMapper;
-use Lemonade\Postcode\Formatter\CZ_Formatter;
-use Lemonade\Postcode\Formatter\SK_Formatter;
-use Lemonade\Postcode\Exception\UnknownCountryException;
+use Lemonade\Postcode\CountryPostcodeFormatter;
 use PHPUnit\Framework\TestCase;
 
-class FormatterMapperTest extends TestCase
+final class FormatterMapperTest extends TestCase
 {
-    private FormatterRegistry $registry;
-
-    protected function setUp(): void
+    public function testAllReturnsArrayOfFormatters(): void
     {
-        $this->registry = new FormatterRegistry([
-            'CZ' => new CZ_Formatter(),
-            'SK' => new SK_Formatter(),
-        ]);
+        $map = FormatterMapper::all();
+
+        $this->assertIsArray($map);
+        $this->assertNotEmpty($map);
+
+        foreach ($map as $code => $formatter) {
+            $this->assertIsString($code);
+            $this->assertInstanceOf(CountryPostcodeFormatter::class, $formatter);
+        }
     }
 
-    public function testAddingFormatter(): void
+    public function testAllContainsCzFormatter(): void
     {
-        $newFormatter = new SK_Formatter(); // New instance of SK_Formatter
-        $newRegistry = $this->registry->withAdded('PL', $newFormatter);
+        $map = FormatterMapper::all();
 
-        // Assert that new registry contains 'PL' country code
-        $this->assertTrue($newRegistry->has('PL'));
-        $this->assertInstanceOf(SK_Formatter::class, $newRegistry->get('PL'));
-    }
-
-    public function testGetFormatterForExistingCountry(): void
-    {
-        $formatter = $this->registry->get('CZ');
-        $this->assertInstanceOf(CZ_Formatter::class, $formatter);
-    }
-
-    public function testGetFormatterForUnknownCountry(): void
-    {
-        $this->expectException(UnknownCountryException::class);
-        $this->registry->get('XX');
-    }
-
-    public function testListCountries(): void
-    {
-        $countries = $this->registry->listCountries();
-        $this->assertContains('CZ', $countries);
-        $this->assertContains('SK', $countries);
+        $this->assertArrayHasKey('CZ', $map);
+        $this->assertInstanceOf(CountryPostcodeFormatter::class, $map['CZ']);
     }
 }

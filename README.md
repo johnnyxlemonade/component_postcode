@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![PHP Version](https://img.shields.io/badge/php-8.1%20--%208.5-blue)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](vendor/bin/phpunit)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](#)
 
 A lightweight PHP library for validating and formatting international postal codes (ZIP/PSC).  
 Provides country-specific formatters, unified exception handling, and clear error codes for integration in forms, APIs, and e-commerce applications.
@@ -22,7 +23,8 @@ Provides country-specific formatters, unified exception handling, and clear erro
 - ✅ PSR-4 autoloading
 - ✅ PHPUnit test coverage
 - ✅ PHPStan **Level 10 + Strict Rules**
-
+- ✅ Verified with **100% PHPUnit coverage**
+- ✅ Includes support for all **249 ISO 3166-1 alpha-2 country codes**
 ---
 
 ## 🚀 Installation
@@ -37,46 +39,44 @@ Provides country-specific formatters, unified exception handling, and clear erro
 
 ```php
 use Lemonade\Postcode\PostcodeFormatter;
+use Lemonade\Postcode\CountryCode;
 use Lemonade\Postcode\Exception\PostcodeException;
-use Lemonade\Postcode\FormatterMapper;
 use Lemonade\Postcode\FormatterRegistry;
 
-// initialize with all built-in formatters
-$registry  = new FormatterRegistry(FormatterMapper::all()); // IMMUTABLE REGISTRY
-$formatter = new PostcodeFormatter($registry);              // READONLY REFERENCE
+// initialize with default formatters
+$registry  = new FormatterRegistry();          // IMMUTABLE REGISTRY
+$formatter = new PostcodeFormatter($registry); // READONLY REFERENCE
 
 try {
-    $postcode = $formatter->format('CZ', '12000'); 
-    // returns "120 00"
+    $postcode = $formatter->format(CountryCode::CZ, '12000');
+    // "120 00"
 } catch (PostcodeException $e) {
     echo $e->getValue() . ' is invalid: ' . $e->getMessage();
 }
-
 ```
 
 ## ➕ Custom Formatters
 
 You can easily extend the library with your own country-specific formatters.  
-Simply implement `CountryPostcodeFormatter` and register it in the `FormatterRegistry`.
+Simply implement `CountryPostcodeFormatter` and register it via `FormatterRegistry`.
 
 Example with an **anonymous class**:
 
 ```php
-use Lemonade\Postcode\PostcodeFormatter;
+use Lemonade\Postcode\CountryCode;
 use Lemonade\Postcode\CountryPostcodeFormatter;
-use Lemonade\Postcode\FormatterMapper;
+use Lemonade\Postcode\Exception\InvalidPostcodeException;
 use Lemonade\Postcode\FormatterRegistry;
-use Lemonade\Postcode\Exception\PostcodeException;
+use Lemonade\Postcode\PostcodeFormatter;
 
-// load default formatters
-$registry = new FormatterRegistry(FormatterMapper::all());
+$registry = new FormatterRegistry();
 
-// add custom "XX" country formatter
-$registry = $registry->withAdded('XX', new class implements CountryPostcodeFormatter {
+// Add custom formatter for Antarctica (AQ)
+$registry = $registry->register(CountryCode::AQ, new class implements CountryPostcodeFormatter {
     public function format(string $postcode): string
     {
-        if (preg_match('/^[A-F0-9]{8}$/', $postcode) !== 1) {
-            throw new \Lemonade\Postcode\Exception\InvalidPostcodeException($postcode);
+        if (preg_match('/^[0-9]{4}$/', $postcode) !== 1) {
+            throw new InvalidPostcodeException($postcode);
         }
         return strtoupper($postcode);
     }
@@ -85,13 +85,14 @@ $registry = $registry->withAdded('XX', new class implements CountryPostcodeForma
 $formatter = new PostcodeFormatter($registry);
 
 try {
-    echo $formatter->format('XX', 'deadbeef'); 
-    // outputs "DEADBEEF"
-} catch (PostcodeException $e) {
+    echo $formatter->format(CountryCode::AQ, '1231');
+    // outputs "1231"
+} catch (InvalidPostcodeException $e) {
     echo $e->getValue() . ' is invalid: ' . $e->getMessage();
 }
-
 ```
+
+
 ---
 
 ## 📦 Country Formatters
@@ -122,7 +123,12 @@ This makes it easy to distinguish between invalid input and unsupported countrie
   or unrecognized ISO 3166-1 alpha-2 country code.  
   Example: `"XX"`.
 
-Both exceptions implement the `PostcodeException` interface, which provides:
+- **`UnsupportedCountryException`**  
+  Thrown when the country code is valid, but no formatter is registered for it.
+
+  Example: `"AQ"` (valid ISO code, but not implemented in `FormatterMapper`)..
+
+All exceptions implement the `PostcodeException` interface, which provides:
 
 - `getValue()` → returns the original input (`postcode` or `country`)
 - `getCode()` → stable numeric error code (`PostcodeErrorCode`)

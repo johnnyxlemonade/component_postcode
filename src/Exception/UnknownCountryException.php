@@ -8,8 +8,8 @@ use Throwable;
 /**
  * UnknownCountryException
  *
- * Thrown when attempting to format a postcode for an unsupported
- * or unrecognized ISO 3166-1 alpha-2 country code.
+ * Thrown when an invalid or unrecognized ISO 3166-1 alpha-2 country code
+ * is provided, or when no formatter is registered for the given country code.
  *
  * Carries the original country code value and the corresponding
  * {@see PostcodeErrorCode}.
@@ -31,11 +31,6 @@ final class UnknownCountryException extends RuntimeException implements Postcode
     }
 
     public function getValue(): string
-    {
-        return $this->country;
-    }
-
-    public function getCountry(): string
     {
         return $this->country;
     }

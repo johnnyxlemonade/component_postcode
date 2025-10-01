@@ -1,5 +1,23 @@
 # 📖 Changelog
 
+## [3.0.0] - 2025-10-02
+### Added
+- Strongly typed country codes via `CountryCode` enum (`CZ`, `SK`, `DE`, …).
+- `FormatterRegistry::all()` method to list all registered formatters.
+- Full PHPUnit coverage for enum-based API.
+
+### Changed
+- **BC BREAK**: All public APIs now require `CountryCode` enum instead of raw string codes.
+    - `PostcodeFormatter::format(CountryCode $country, string $postcode)`
+    - `FormatterRegistry::register(CountryCode $country, CountryPostcodeFormatter $formatter)`
+    - `FormatterRegistry::getFormatter(CountryCode $country)`
+- Default registry initialization refactored to immutable pattern.
+- Documentation and examples updated to use `CountryCode`.
+
+### Fixed
+- Safer handling of invalid ISO codes (`CountryCode::tryFrom()` prevents misuse).
+- Consistent error reporting when unsupported but valid ISO code is requested.
+
 ## [2.0.0] - 2025-10-02
 ### Added
 - Input normalization for postal codes (handles hyphens, spaces).

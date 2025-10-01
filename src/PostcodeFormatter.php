@@ -4,6 +4,7 @@ namespace Lemonade\Postcode;
 
 use Lemonade\Postcode\Exception\UnknownCountryException;
 use Lemonade\Postcode\Exception\InvalidPostcodeException;
+use Lemonade\Postcode\Exception\UnsupportedCountryException;
 
 use function preg_match;
 use function str_replace;
@@ -13,14 +14,21 @@ use function strtoupper;
  * PostcodeFormatter
  *
  * Core component of the Lemonade Postcode package.
- * Provides unified API for normalization, validation and formatting
- * of postal codes across multiple countries.
+ * Provides a unified API for formatting and validating
+ * postal codes across supported countries.
  *
- * Uses a {@see FormatterRegistry} to resolve {@see CountryPostcodeFormatter}
- * implementations, which encapsulate country-specific validation rules.
+ * Delegates the actual validation and formatting logic to
+ * a {@see CountryPostcodeFormatter} implementation resolved
+ * via the {@see FormatterRegistry}.
  *
- * This class is part of the Lemonade Framework infrastructure and is intended
- * as the main entry point for working with postal code formatting and validation.
+ * This class is the main entry point for working with
+ * postcode formatting in the Lemonade Framework.
+ *
+ * Exceptions:
+ * - {@see InvalidPostcodeException} if the postcode does not match
+ *   the validation rules for the country
+ * - {@see UnsupportedCountryException} if no formatter is registered
+ *   for the given country
  *
  * @package     Lemonade Framework
  * @link        https://lemonadeframework.cz/
@@ -30,38 +38,17 @@ use function strtoupper;
  */
 final class PostcodeFormatter
 {
-    public function __construct(
-        protected readonly FormatterRegistry $registry
-    ) {}
+    public function __construct(private readonly FormatterRegistry $formatterRegistry)
+    {}
 
     /**
      * @throws InvalidPostcodeException
-     * @throws UnknownCountryException
+     * @throws UnsupportedCountryException
      */
-    public function format(string $country, string $postcode): string
+    public function format(CountryCode $country, string $postcode): string
     {
-        $normalized = $this->normalize($postcode);
-        $this->validateNormalized($normalized);
+        $formatter = $this->formatterRegistry->getFormatter($country);
 
-        $formatter = $this->registry->get($country);
-
-        return $formatter->format($normalized);
-    }
-
-    public function isSupportedCountry(string $country): bool
-    {
-        return $this->registry->has($country);
-    }
-
-    private function normalize(string $postcode): string
-    {
-        return strtoupper(str_replace([' ', '-'], '', $postcode));
-    }
-
-    private function validateNormalized(string $postcode): void
-    {
-        if (preg_match('/^[A-Z0-9]+$/', $postcode) !== 1) {
-            throw new InvalidPostcodeException($postcode);
-        }
+        return $formatter->format($postcode);
     }
 }

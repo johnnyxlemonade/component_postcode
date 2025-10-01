@@ -9,8 +9,8 @@ namespace Lemonade\Postcode\Exception;
  * Provides stable integer values as well as translation keys
  * for localizable error messages.
  *
- * Used in conjunction with {@see InvalidPostcodeException}
- * and {@see UnknownCountryException}.
+ * Used in conjunction with {@see InvalidPostcodeException},
+ * {@see UnknownCountryException}, and {@see UnsupportedCountryException}.
  *
  * @package     Lemonade Framework
  * @link        https://lemonadeframework.cz/
@@ -20,9 +20,10 @@ namespace Lemonade\Postcode\Exception;
  */
 enum PostcodeErrorCode: int
 {
-    case UnknownCountry   = 1001;
-    case InvalidFormat    = 1002;
-    case UnsupportedValue = 1003;
+    case UnknownCountry    = 1001;
+    case InvalidFormat     = 1002;
+    case UnsupportedValue  = 1003;
+    case UnsupportedCountry = 1004;
 
     /**
      * Translation key for this error
@@ -33,6 +34,7 @@ enum PostcodeErrorCode: int
             self::UnknownCountry   => 'error.unknown_country',
             self::InvalidFormat    => 'error.invalid_postcode',
             self::UnsupportedValue => 'error.unsupported_value',
+            self::UnsupportedCountry => 'error.unsupported_country',
         };
     }
 }
