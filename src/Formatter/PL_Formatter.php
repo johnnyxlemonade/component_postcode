@@ -17,8 +17,11 @@ final class PL_Formatter implements CountryPostcodeFormatter
 
     public function format(string $postcode): string
     {
-        $this->assertMatches($postcode, '/^[0-9]{5}$/');
+        // odstraníme vše kromě číslic
+        $normalized = preg_replace('/\D/', '', $postcode);
 
-        return substr($postcode, 0, 2) . '-' . substr($postcode, 2);
+        $this->assertMatches($normalized, '/^[0-9]{5}$/');
+
+        return substr($normalized, 0, 2) . '-' . substr($normalized, 2);
     }
 }
